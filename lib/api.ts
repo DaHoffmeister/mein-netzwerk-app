@@ -6,7 +6,7 @@ import axios from 'axios';
 import { getToken } from './auth';
 
 const api = axios.create({
-  baseURL: 'http://localhost:4000/api',
+  baseURL: 'https://net.assozrpg.de/api',
   withCredentials: true, // Cookie für Web-App mitschicken
 });
 
