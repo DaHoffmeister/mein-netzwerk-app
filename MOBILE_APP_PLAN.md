@@ -3,14 +3,51 @@
 
 ---
 
-## 1. Ziel
+## 1. Externe Accounts & erzeugte Dateien
+
+### Accounts
+
+| Dienst | Account | Wofür | Wo |
+|--------|---------|-------|----|
+| **Expo** | @kungill | EAS Build (APK bauen), Push-Notification-Service, Projekt-Hosting | expo.dev |
+| **Firebase** | Google-Account | FCM (Firebase Cloud Messaging) — Googles Infrastruktur für Android-Push. Ohne Firebase kommen keine Push-Nachrichten auf Android-Geräten an | console.firebase.google.com |
+
+### Firebase-Projekt
+- **Projekt-ID:** `assoz-net`
+- **Android-App:** Package `com.kungill.assoznetapp`
+- **Warum Firebase?** Android-Push-Nachrichten laufen zwingend über Googles FCM-Infrastruktur. Expo nutzt FCM im Hintergrund — wir müssen Firebase nur einmalig einrichten und die Credentials mit Expo verbinden.
+
+### Erzeugte Dateien
+
+| Datei | Ort | Inhalt | Warum |
+|-------|-----|--------|-------|
+| `google-services.json` | App-Wurzelordner | Firebase-Konfiguration für die Android-App | Damit die App weiß zu welchem Firebase-Projekt sie gehört — Pflicht für FCM auf Android |
+| `eas.json` | App-Wurzelordner | EAS Build-Profile (development, preview, production) | Konfiguriert wie EAS die APK baut |
+| `lib/notifications.ts` | App | Push-Token holen, Berechtigungen anfragen, Token im Backend registrieren | Zentraler Push-Service für die App |
+
+### Verknüpfung der Dienste
+
+```
+Expo-Account (expo.dev)
+  └── Projekt: mein-netzwerk-app (ID: d19a8304-...)
+        └── Credentials → Android → FCM V1 Service Account Key
+              └── assoz-net-firebase-adminsdk-*.json  (privater Schlüssel, NICHT in Git)
+                    └── Firebase-Projekt: assoz-net
+                          └── Android-App: com.kungill.assoznetapp
+```
+
+**Wichtig:** Der Firebase Service Account Key (`assoz-net-firebase-adminsdk-*.json`) ist ein **Geheimnis** — er liegt nur lokal und ist in `.gitignore` eingetragen.
+
+---
+
+## 2. Ziel
 
 Eine native Mobile App für iOS und Android, die dieselbe API wie die Web-App nutzt.
 Einstieg mit einfachen Features (Counter, Events, Feed), spätere Erweiterung zum vollständigen Chat-Programm.
 
 ---
 
-## 2. Deployment-Strategie (ohne App Store)
+## 3. Deployment-Strategie (ohne App Store)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -297,7 +334,29 @@ model PushToken {
 
 ---
 
-### Phase 4 — Chat (8–12 Std.)
+### Phase 4 — Website-Features in die App (Feed, Gruppen, Profil)
+- [ ] Feed-Screen: Posts anzeigen + erstellen (`/api/posts`)
+- [ ] Gruppen-Screen: Liste + Detail (`/api/groups`)
+- [ ] Profil-Screen: echte Userdaten, Avatar (`/api/users/me`)
+- [ ] Events-Screen: Liste + RSVP (`/api/events`)
+
+**Ergebnis:** App hat denselben Funktionsumfang wie die Website
+
+---
+
+### Phase 5 — Android App Links (1–2 Std.)
+Wenn jemand `net.assozrpg.de` auf Android besucht, öffnet sich automatisch die App statt dem Browser.
+
+**Was gebraucht wird:**
+- `/.well-known/assetlinks.json` auf dem Pi-Webserver hinterlegen (nginx-Konfiguration)
+- `intentFilters` in `app.json` für die gewünschten URLs konfigurieren
+- Neuer EAS Build
+
+**Beispiel:** Jemand tippt auf einen Link zu `net.assozrpg.de/login` → Android fragt "In App öffnen?" oder öffnet direkt die App.
+
+---
+
+### Phase 6 — Chat (8–12 Std.)
 - [ ] WebSocket-Verbindung (vorhandener `/ws` Endpoint)
 - [ ] Chat-Screen: Konversationsliste
 - [ ] Echtzeit-Nachrichten senden/empfangen
@@ -310,11 +369,12 @@ model PushToken {
 ## 8. Meilenstein-Übersicht
 
 ```
-Phase 1  ████████████████████████  Grundgerüst + Auth         ✅
-Phase 2  ████████████████████████  Counter + EAS Dev Build    ✅
-Phase 3  ████████████████████████  Push-Benachrichtigungen    ✅
-Phase 4  ░░░░░░░░░░░░░░░░░░░░░░░░  Feed + Gruppen + Profil    ← nächste
-Phase 5  ░░░░░░░░░░░░░░░░░░░░░░░░  Chat (Vollausbau)
+Phase 1  ████████████████████████  Grundgerüst + Auth              ✅
+Phase 2  ████████████████████████  Counter + EAS Dev Build         ✅
+Phase 3  ████████████████████████  Push-Benachrichtigungen         ✅
+Phase 4  ░░░░░░░░░░░░░░░░░░░░░░░░  Website-Features (Feed etc.)   ← nächste
+Phase 5  ░░░░░░░░░░░░░░░░░░░░░░░░  Android App Links
+Phase 6  ░░░░░░░░░░░░░░░░░░░░░░░░  Chat (Vollausbau)
           └── je Phase ca. 1–2 Abende
 ```
 

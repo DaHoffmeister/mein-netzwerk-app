@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git -C \"E:/prjcts/mein-netzwerk-app\" log --since=\"2 hours ago\" --oneline | grep -q . && claude --dangerously-skip-permissions -p \"Dokumentations-Agent fuer mein-netzwerk-app: Lies 'git -C E:/prjcts/mein-netzwerk-app log --oneline -15' und 'cat E:/prjcts/mein-netzwerk-app/MILESTONES.md'. Aktualisiere NUR E:/prjcts/mein-netzwerk-app/MILESTONES.md: setze erledigte Punkte auf Checkmark, fuege neue Fortschritte aus dem git log hinzu. Sei kurz und praezise. Aendere keine anderen Dateien.\" || true"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh auth:*)",
+      "Bash(ssh:*)"
+    ]
+  }
+}
