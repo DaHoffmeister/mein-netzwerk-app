@@ -1,13 +1,14 @@
 // app/(tabs)/index.tsx
 // Home-Screen — Join Session verwalten, Konsum zählen, Benachrichtigungen senden
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  Modal, TextInput, Switch, Alert, ActivityIndicator, RefreshControl,
+  Modal, TextInput, Switch, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import api from '../../lib/api';
+import { useTheme } from '../../lib/ThemeContext';
 
 // ── Typen ────────────────────────────────────────────────────────
 
@@ -48,6 +49,8 @@ const NOTIFY_TYPES = [
 // ── Hauptkomponente ──────────────────────────────────────────────
 
 export default function HomeScreen() {
+  const { theme } = useTheme();
+
   const [session, setSession] = useState<Session | null>(null);
   const [stats, setStats] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +60,8 @@ export default function HomeScreen() {
   const [showCreate, setShowCreate] = useState(false);
   const [showConsume, setShowConsume] = useState(false);
   const [selectedItem, setSelectedItem] = useState<typeof ITEMS[0] | null>(null);
+  const [confirm, setConfirm] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Session erstellen
   const [sessionName, setSessionName] = useState('');
@@ -78,7 +83,6 @@ export default function HomeScreen() {
       if (res.data) {
         const statsRes = await api.get(`/counter/sessions/${res.data.id}/stats`);
         setStats(statsRes.data);
-        // Eigene Notification-Einstellung
         const me = statsRes.data.find((p: Participant) => p.notificationsOn !== undefined);
         if (me) setNotificationsOn(me.notificationsOn);
       }
@@ -90,10 +94,8 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Beim Fokussieren des Tabs neu laden
   useFocusEffect(useCallback(() => { loadSession(); }, [loadSession]));
 
-  // Alle User für Dropdown laden
   async function loadUsers() {
     try {
       const res = await api.get('/users');
@@ -104,7 +106,11 @@ export default function HomeScreen() {
   // ── Session erstellen ────────────────────────────────────────────
 
   async function handleCreateSession() {
-    if (!sessionName.trim()) return;
+    if (!sessionName.trim()) {
+      setErrorMsg('Bitte einen Namen eingeben.');
+      return;
+    }
+    setErrorMsg('');
     try {
       const res = await api.post('/counter/sessions', {
         name: sessionName.trim(),
@@ -116,40 +122,36 @@ export default function HomeScreen() {
       setSelectedUserIds([]);
       loadSession();
     } catch {
-      Alert.alert('Fehler', 'Session konnte nicht erstellt werden.');
+      setErrorMsg('Session konnte nicht erstellt werden.');
     }
   }
 
   // ── Session beenden ──────────────────────────────────────────────
 
-  async function handleEndSession() {
-    Alert.alert('Session beenden', 'Willst du den Abend wirklich beenden?', [
-      { text: 'Abbrechen', style: 'cancel' },
-      {
-        text: 'Beenden', style: 'destructive',
-        onPress: async () => {
-          await api.post(`/counter/sessions/${session!.id}/end`);
-          setSession(null);
-          setStats([]);
-        },
+  function handleEndSession() {
+    setConfirm({
+      title: 'Session beenden',
+      message: 'Willst du den Abend wirklich beenden?',
+      onConfirm: async () => {
+        await api.post(`/counter/sessions/${session!.id}/end`);
+        setSession(null);
+        setStats([]);
+        setConfirm(null);
       },
-    ]);
+    });
   }
 
   // ── Konsum eintragen ─────────────────────────────────────────────
 
   function openConsumeModal(item: typeof ITEMS[0]) {
     setSelectedItem(item);
-    setShareUserIds([]); // Default: nur für sich selbst
+    setShareUserIds([]);
     setShowConsume(true);
   }
 
   async function handleConsume(forSelf: boolean) {
     if (!session || !selectedItem) return;
-    const userIds = forSelf
-      ? undefined // Backend-Default: nur eigene ID
-      : shareUserIds;
-
+    const userIds = forSelf ? undefined : shareUserIds;
     try {
       await api.post(`/counter/sessions/${session.id}/consume`, {
         item: selectedItem.key,
@@ -158,7 +160,7 @@ export default function HomeScreen() {
       setShowConsume(false);
       loadSession();
     } catch {
-      Alert.alert('Fehler', 'Konsum konnte nicht eingetragen werden.');
+      setErrorMsg('Konsum konnte nicht eingetragen werden.');
     }
   }
 
@@ -169,7 +171,7 @@ export default function HomeScreen() {
     try {
       await api.post(`/counter/sessions/${session.id}/notify`, { type });
     } catch {
-      Alert.alert('Fehler', 'Benachrichtigung konnte nicht gesendet werden.');
+      setErrorMsg('Benachrichtigung konnte nicht gesendet werden.');
     }
   }
 
@@ -184,20 +186,23 @@ export default function HomeScreen() {
   // ── Render ───────────────────────────────────────────────────────
 
   if (loading) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
+    return <ActivityIndicator style={{ flex: 1 }} color={theme.brand} />;
   }
 
   return (
     <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSession(); }} />}
+      style={{ flex: 1, backgroundColor: theme.bg }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSession(); }} tintColor={theme.brand} />}
     >
       {/* ── Kein aktiver Abend ── */}
       {!session && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Kein aktiver Abend</Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => { loadUsers(); setShowCreate(true); }}>
-            <Text style={styles.primaryButtonText}>🎉 Abend starten</Text>
+          <Text style={[styles.emptyText, { color: theme.textDim }]}>Kein aktiver Abend</Text>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: theme.brand }]}
+            onPress={() => { loadUsers(); setShowCreate(true); }}
+          >
+            <Text style={[styles.primaryButtonText, { color: theme.bg }]}>🎉 Abend starten</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -206,70 +211,85 @@ export default function HomeScreen() {
       {session && (
         <>
           {/* Header */}
-          <View style={styles.sessionHeader}>
-            <Text style={styles.sessionName}>{session.name}</Text>
-            <Text style={styles.sessionCode}>Code: {session.code}</Text>
+          <View style={[styles.sessionHeader, { backgroundColor: theme.panel }]}>
+            <Text style={[styles.sessionName, { color: theme.brand }]}>{session.name}</Text>
+            <Text style={[styles.sessionCode, { color: theme.textDim }]}>Code: {session.code}</Text>
             <TouchableOpacity onPress={handleEndSession}>
-              <Text style={styles.endButton}>Beenden</Text>
+              <Text style={[styles.endButton, { color: theme.danger }]}>Beenden</Text>
             </TouchableOpacity>
           </View>
 
           {/* Alkohol-Buttons */}
-          <Text style={styles.sectionTitle}>ALKOHOL</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>ALKOHOL</Text>
           <View style={styles.buttonGrid}>
             {ITEMS.filter(i => i.category === 'alcohol').map(item => (
-              <TouchableOpacity key={item.key} style={styles.counterButton} onPress={() => openConsumeModal(item)}>
+              <TouchableOpacity
+                key={item.key}
+                style={[styles.counterButton, { backgroundColor: theme.brand }]}
+                onPress={() => openConsumeModal(item)}
+              >
                 <Text style={styles.counterEmoji}>{item.emoji}</Text>
-                <Text style={styles.counterLabel}>{item.key}</Text>
+                <Text style={[styles.counterLabel, { color: theme.bg }]}>{item.key}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Sonstiges-Buttons */}
-          <Text style={styles.sectionTitle}>SONSTIGES</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>SONSTIGES</Text>
           <View style={styles.buttonGrid}>
             {ITEMS.filter(i => i.category === 'drug').map(item => (
-              <TouchableOpacity key={item.key} style={[styles.counterButton, styles.drugButton]} onPress={() => openConsumeModal(item)}>
+              <TouchableOpacity
+                key={item.key}
+                style={[styles.counterButton, { backgroundColor: theme.accent }]}
+                onPress={() => openConsumeModal(item)}
+              >
                 <Text style={styles.counterEmoji}>{item.emoji}</Text>
-                <Text style={styles.counterLabel}>{item.key}</Text>
+                <Text style={[styles.counterLabel, { color: theme.text }]}>{item.key}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Benachrichtigungs-Buttons */}
-          <Text style={styles.sectionTitle}>BENACHRICHTIGEN</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>BENACHRICHTIGEN</Text>
           <View style={styles.notifyRow}>
             {NOTIFY_TYPES.map(n => (
-              <TouchableOpacity key={n.key} style={styles.notifyButton} onPress={() => handleNotify(n.key)}>
+              <TouchableOpacity
+                key={n.key}
+                style={[styles.notifyButton, { backgroundColor: theme.panel, borderColor: theme.muted }]}
+                onPress={() => handleNotify(n.key)}
+              >
                 <Text style={styles.notifyEmoji}>{n.emoji}</Text>
-                <Text style={styles.notifyLabel}>{n.label}</Text>
+                <Text style={[styles.notifyLabel, { color: theme.textDim }]}>{n.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Notifications Toggle */}
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>🔔 Benachrichtigungen</Text>
-            <Switch value={notificationsOn} onValueChange={handleToggleNotifications} />
+          <View style={[styles.toggleRow, { backgroundColor: theme.panel }]}>
+            <Text style={[styles.toggleLabel, { color: theme.text }]}>🔔 Benachrichtigungen</Text>
+            <Switch
+              value={notificationsOn}
+              onValueChange={handleToggleNotifications}
+              trackColor={{ false: theme.muted, true: theme.brand }}
+              thumbColor={theme.panel}
+            />
           </View>
 
           {/* Stats-Tabelle */}
-          <Text style={styles.sectionTitle}>ÜBERSICHT</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>ÜBERSICHT</Text>
           <ScrollView horizontal>
             <View>
-              {/* Header-Zeile */}
               <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, styles.tableCellName, styles.tableHeader]}>Name</Text>
+                <Text style={[styles.tableCell, styles.tableCellName, styles.tableHeader, { color: theme.textDim }]}>Name</Text>
                 {ITEMS.map(i => (
-                  <Text key={i.key} style={[styles.tableCell, styles.tableHeader]}>{i.emoji}</Text>
+                  <Text key={i.key} style={[styles.tableCell, styles.tableHeader, { color: theme.textDim }]}>{i.emoji}</Text>
                 ))}
               </View>
-              {/* Daten-Zeilen */}
               {stats.map((p, idx) => (
-                <View key={p.userId} style={[styles.tableRow, idx % 2 === 0 && styles.tableRowEven]}>
-                  <Text style={[styles.tableCell, styles.tableCellName]}>{p.username}</Text>
+                <View key={p.userId} style={[styles.tableRow, idx % 2 === 0 && { backgroundColor: theme.panel }]}>
+                  <Text style={[styles.tableCell, styles.tableCellName, { color: theme.text }]}>{p.username}</Text>
                   {ITEMS.map(i => (
-                    <Text key={i.key} style={styles.tableCell}>{p[i.key as keyof Participant] as number}</Text>
+                    <Text key={i.key} style={[styles.tableCell, { color: theme.text }]}>{p[i.key as keyof Participant] as number}</Text>
                   ))}
                 </View>
               ))}
@@ -281,35 +301,71 @@ export default function HomeScreen() {
       {/* ── Modal: Session erstellen ── */}
       <Modal visible={showCreate} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Abend starten</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.panel }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Abend starten</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: theme.muted, color: theme.text, backgroundColor: theme.bg }]}
               placeholder="Name des Abends"
+              placeholderTextColor={theme.textDim}
               value={sessionName}
               onChangeText={setSessionName}
             />
-            <Text style={styles.modalSubtitle}>Teilnehmer auswählen:</Text>
+            {errorMsg ? <Text style={{ color: theme.danger, marginBottom: 8 }}>{errorMsg}</Text> : null}
+            <Text style={[styles.modalSubtitle, { color: theme.textDim }]}>Teilnehmer auswählen:</Text>
             <ScrollView style={{ maxHeight: 200 }}>
               {allUsers.map(u => (
                 <TouchableOpacity
                   key={u.id}
-                  style={styles.userRow}
+                  style={[styles.userRow, { borderBottomColor: theme.muted }]}
                   onPress={() => setSelectedUserIds(ids =>
                     ids.includes(u.id) ? ids.filter(id => id !== u.id) : [...ids, u.id]
                   )}
                 >
-                  <Text style={styles.checkbox}>{selectedUserIds.includes(u.id) ? '☑' : '☐'}</Text>
-                  <Text style={styles.userName}>{u.username}</Text>
+                  <Text style={[styles.checkbox, { color: theme.brand }]}>{selectedUserIds.includes(u.id) ? '☑' : '☐'}</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>{u.username}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <TouchableOpacity style={styles.primaryButton} onPress={handleCreateSession}>
-              <Text style={styles.primaryButtonText}>Erstellen</Text>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.brand }]} onPress={handleCreateSession}>
+              <Text style={[styles.primaryButtonText, { color: theme.bg }]}>Erstellen</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowCreate(false)}>
-              <Text style={styles.cancelText}>Abbrechen</Text>
+              <Text style={[styles.cancelText, { color: theme.textDim }]}>Abbrechen</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Fehler-Banner ── */}
+      {errorMsg ? (
+        <TouchableOpacity
+          style={[styles.errorBanner, { backgroundColor: theme.danger }]}
+          onPress={() => setErrorMsg('')}
+        >
+          <Text style={styles.errorBannerText}>{errorMsg} ✕</Text>
+        </TouchableOpacity>
+      ) : null}
+
+      {/* ── Bestätigungs-Modal ── */}
+      <Modal visible={!!confirm} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.confirmBox, { backgroundColor: theme.panel }]}>
+            <Text style={[styles.confirmTitle, { color: theme.text }]}>{confirm?.title}</Text>
+            <Text style={[styles.confirmMessage, { color: theme.textDim }]}>{confirm?.message}</Text>
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity
+                style={[styles.confirmBtn, { borderColor: theme.muted, borderWidth: 1 }]}
+                onPress={() => setConfirm(null)}
+              >
+                <Text style={{ color: theme.textDim, fontWeight: '600' }}>Abbrechen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmBtn, { backgroundColor: theme.danger }]}
+                onPress={confirm?.onConfirm}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Beenden</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -317,35 +373,35 @@ export default function HomeScreen() {
       {/* ── Modal: Konsum eintragen ── */}
       <Modal visible={showConsume} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
+          <View style={[styles.modalContent, { backgroundColor: theme.panel }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
               {selectedItem?.emoji} {selectedItem?.key}
             </Text>
-            <TouchableOpacity style={styles.primaryButton} onPress={() => handleConsume(true)}>
-              <Text style={styles.primaryButtonText}>Nur für mich</Text>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.brand }]} onPress={() => handleConsume(true)}>
+              <Text style={[styles.primaryButtonText, { color: theme.bg }]}>Nur für mich</Text>
             </TouchableOpacity>
-            <Text style={styles.modalSubtitle}>Mit anderen teilen:</Text>
+            <Text style={[styles.modalSubtitle, { color: theme.textDim }]}>Mit anderen teilen:</Text>
             <ScrollView style={{ maxHeight: 200 }}>
               {session?.participants.map(p => (
                 <TouchableOpacity
                   key={p.user.id}
-                  style={styles.userRow}
+                  style={[styles.userRow, { borderBottomColor: theme.muted }]}
                   onPress={() => setShareUserIds(ids =>
                     ids.includes(p.user.id) ? ids.filter(id => id !== p.user.id) : [...ids, p.user.id]
                   )}
                 >
-                  <Text style={styles.checkbox}>{shareUserIds.includes(p.user.id) ? '☑' : '☐'}</Text>
-                  <Text style={styles.userName}>{p.user.username}</Text>
+                  <Text style={[styles.checkbox, { color: theme.brand }]}>{shareUserIds.includes(p.user.id) ? '☑' : '☐'}</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>{p.user.username}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             {shareUserIds.length > 0 && (
-              <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#e67e22' }]} onPress={() => handleConsume(false)}>
-                <Text style={styles.primaryButtonText}>Für Ausgewählte zählen</Text>
+              <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.accent }]} onPress={() => handleConsume(false)}>
+                <Text style={[styles.primaryButtonText, { color: theme.text }]}>Für Ausgewählte zählen</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={() => setShowConsume(false)}>
-              <Text style={styles.cancelText}>Abbrechen</Text>
+              <Text style={[styles.cancelText, { color: theme.textDim }]}>Abbrechen</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -354,53 +410,58 @@ export default function HomeScreen() {
   );
 }
 
-// ── Styles ───────────────────────────────────────────────────────
+// ── Styles (nur Layout, keine Farben) ────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, marginTop: 100 },
-  emptyText: { fontSize: 18, color: '#999', marginBottom: 24 },
+  emptyText: { fontSize: 18, marginBottom: 24 },
 
-  sessionHeader: { backgroundColor: '#2c3e50', padding: 16, margin: 12, borderRadius: 12 },
-  sessionName: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  sessionCode: { fontSize: 13, color: '#bdc3c7', marginTop: 4 },
-  endButton: { color: '#e74c3c', marginTop: 8, fontWeight: '600' },
+  sessionHeader: { padding: 16, margin: 12, borderRadius: 12 },
+  sessionName: { fontSize: 20, fontWeight: 'bold' },
+  sessionCode: { fontSize: 13, marginTop: 4 },
+  endButton: { marginTop: 8, fontWeight: '600' },
 
-  sectionTitle: { fontSize: 12, fontWeight: 'bold', color: '#999', marginLeft: 16, marginTop: 16, marginBottom: 8, letterSpacing: 1 },
+  sectionTitle: { fontSize: 12, fontWeight: 'bold', marginLeft: 16, marginTop: 16, marginBottom: 8, letterSpacing: 1 },
 
   buttonGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
-  counterButton: { width: '22%', aspectRatio: 1, backgroundColor: '#3498db', borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  drugButton: { backgroundColor: '#27ae60' },
+  counterButton: { width: '22%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   counterEmoji: { fontSize: 24 },
-  counterLabel: { fontSize: 11, color: '#fff', marginTop: 4 },
+  counterLabel: { fontSize: 11, marginTop: 4 },
 
   notifyRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
-  notifyButton: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#ddd' },
+  notifyButton: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1 },
   notifyEmoji: { fontSize: 20 },
-  notifyLabel: { fontSize: 11, color: '#555', marginTop: 4, textAlign: 'center' },
+  notifyLabel: { fontSize: 11, marginTop: 4, textAlign: 'center' },
 
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', margin: 16, padding: 12, backgroundColor: '#fff', borderRadius: 12 },
-  toggleLabel: { fontSize: 15, color: '#333' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', margin: 16, padding: 12, borderRadius: 12 },
+  toggleLabel: { fontSize: 15 },
 
   tableRow: { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 4 },
-  tableRowEven: { backgroundColor: '#f0f0f0' },
-  tableCell: { width: 48, textAlign: 'center', fontSize: 14, color: '#333' },
+  tableCell: { width: 48, textAlign: 'center', fontSize: 14 },
   tableCellName: { width: 90, textAlign: 'left', paddingLeft: 8 },
-  tableHeader: { fontWeight: 'bold', color: '#555', fontSize: 12 },
+  tableHeader: { fontWeight: 'bold', fontSize: 12 },
 
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
   modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
-  modalSubtitle: { fontSize: 14, color: '#999', marginTop: 16, marginBottom: 8 },
+  modalSubtitle: { fontSize: 14, marginTop: 16, marginBottom: 8 },
 
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, fontSize: 16, marginBottom: 8 },
+  input: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 16, marginBottom: 8 },
 
-  userRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  userRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
   checkbox: { fontSize: 20, marginRight: 12 },
   userName: { fontSize: 16 },
 
-  primaryButton: { backgroundColor: '#3498db', borderRadius: 10, padding: 14, alignItems: 'center', marginTop: 12 },
-  primaryButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  cancelText: { textAlign: 'center', color: '#999', marginTop: 12, padding: 8 },
+  primaryButton: { borderRadius: 10, padding: 14, alignItems: 'center', marginTop: 12 },
+  primaryButtonText: { fontWeight: 'bold', fontSize: 16 },
+  cancelText: { textAlign: 'center', marginTop: 12, padding: 8 },
+
+  errorBanner: { margin: 12, borderRadius: 10, padding: 14, alignItems: 'center' },
+  errorBannerText: { color: '#fff', fontWeight: '600' },
+
+  confirmBox: { margin: 32, borderRadius: 16, padding: 24 },
+  confirmTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  confirmMessage: { fontSize: 15, marginBottom: 24 },
+  confirmButtons: { flexDirection: 'row', gap: 12 },
+  confirmBtn: { flex: 1, padding: 14, borderRadius: 10, alignItems: 'center' },
 });

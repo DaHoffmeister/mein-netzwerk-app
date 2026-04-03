@@ -1,22 +1,22 @@
 // app/(tabs)/_layout.tsx
 // Layout für den eingeloggten Bereich — definiert die Tab-Leiste am unteren Bildschirmrand.
-//
-// Tabs-Navigation: Im Gegensatz zu Stack bleiben alle Tab-Screens im Speicher.
-// Wechsel zwischen Tabs = kein Neu-Laden, sondern Ein-/Ausblenden.
-//
-// Jedes <Tabs.Screen> entspricht einer Datei in diesem Ordner:
-//   name="index"   → (tabs)/index.tsx   → Route: /
-//   name="feed"    → (tabs)/feed.tsx    → Route: /feed
-//   usw.
-//
-// options={{ title: '...' }} setzt den Text unter dem Tab-Icon
-// und den Header-Titel des jeweiligen Screens.
 
 import { Tabs } from 'expo-router';
+import { useTheme } from '../../lib/ThemeContext';
 
 export default function TabLayout() {
+  const { theme } = useTheme();
+
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarStyle: { backgroundColor: theme.tabBar, borderTopColor: theme.muted },
+        tabBarActiveTintColor: theme.tabActive,
+        tabBarInactiveTintColor: theme.tabInactive,
+        headerStyle: { backgroundColor: theme.panel },
+        headerTintColor: theme.text,
+      }}
+    >
       <Tabs.Screen name="index"   options={{ title: 'Home' }} />
       <Tabs.Screen name="feed"    options={{ title: 'Feed' }} />
       <Tabs.Screen name="events"  options={{ title: 'Events' }} />

@@ -7,6 +7,7 @@
 import { useEffect } from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { getUser } from '../lib/auth';
+import { ThemeProvider } from '../lib/ThemeContext';
 
 export default function RootLayout() {
   const router = useRouter();
@@ -27,5 +28,9 @@ export default function RootLayout() {
     });
   }, [segments]);
 
-  return <Slot />;
+  return (
+    <ThemeProvider>
+      <Slot />
+    </ThemeProvider>
+  );
 }
