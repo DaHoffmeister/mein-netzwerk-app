@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import api from '../../lib/api';
+import { getToken } from '../../lib/auth';
 import { useTheme } from '../../lib/ThemeContext';
 
 // ── Typen ────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ export default function HomeScreen() {
   // ── Daten laden ─────────────────────────────────────────────────
 
   const loadSession = useCallback(async () => {
+    if (!(await getToken())) { setLoading(false); return; }
     try {
       const res = await api.get('/counter/sessions/active');
       setSession(res.data);

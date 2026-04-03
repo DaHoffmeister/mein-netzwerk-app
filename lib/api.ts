@@ -3,11 +3,12 @@
 // Hängt vor jedem Request automatisch den JWT als Bearer-Token an.
 
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { getToken } from './auth';
 
 const api = axios.create({
   baseURL: 'https://net.assozrpg.de/api',
-  withCredentials: true, // Cookie für Web-App mitschicken
+  withCredentials: Platform.OS === 'web', // Cookie nur für Web-App
 });
 
 // Vor jedem Request: Token holen und als Authorization-Header anhängen

@@ -4,29 +4,44 @@
 // Bei jeder Routenänderung wird geprüft ob ein User gespeichert ist.
 // So funktioniert Login und Logout sofort ohne veralteten State.
 
-import { useEffect } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
-import { getUser } from '../lib/auth';
+import { useEffect, useRef } from 'react';
+import { Slot, useRouter, useRootNavigationState, useSegments } from 'expo-router';
+import { getUser, deleteToken, deleteUser } from '../lib/auth';
 import { ThemeProvider } from '../lib/ThemeContext';
+import api from '../lib/api';
 
 export default function RootLayout() {
   const router = useRouter();
+  const navigationState = useRootNavigationState();
   const segments = useSegments();
+  const checked = useRef(false);
 
   useEffect(() => {
-    getUser().then((user) => {
-      const isLoggedIn = !!user;
+    if (!navigationState?.key) return; // Router noch nicht bereit
+    if (checked.current) return;
+    checked.current = true;
+
+    async function checkAuth() {
+      const user = await getUser();
       const inAuthGroup = segments[0] === '(auth)';
 
-      if (!isLoggedIn && !inAuthGroup) {
-        // Kein User gespeichert → zum Login
-        router.replace('/(auth)/login');
-      } else if (isLoggedIn && inAuthGroup) {
-        // User vorhanden, aber noch auf Login-Seite → zu den Tabs
-        router.replace('/(tabs)');
+      if (!user) {
+        if (!inAuthGroup) router.replace('/(auth)/login');
+        return;
       }
-    });
-  }, [segments]);
+
+      try {
+        await api.get('/auth/me');
+        if (inAuthGroup) router.replace('/(tabs)');
+      } catch {
+        await deleteToken();
+        await deleteUser();
+        router.replace('/(auth)/login');
+      }
+    }
+
+    checkAuth();
+  }, [navigationState?.key]);
 
   return (
     <ThemeProvider>

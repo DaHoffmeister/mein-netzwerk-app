@@ -13,8 +13,8 @@ export default function TabLayout() {
         tabBarStyle: { backgroundColor: theme.tabBar, borderTopColor: theme.muted },
         tabBarActiveTintColor: theme.tabActive,
         tabBarInactiveTintColor: theme.tabInactive,
-        headerStyle: { backgroundColor: theme.panel },
         headerTintColor: theme.text,
+        headerBackgroundContainerStyle: { backgroundColor: theme.panel },
       }}
     >
       <Tabs.Screen name="index"   options={{ title: 'Home' }} />

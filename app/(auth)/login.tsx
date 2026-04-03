@@ -9,6 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { saveToken, saveUser } from '../../lib/auth';
+import { registerForPushNotifications } from '../../lib/notifications';
 import { useTheme } from '../../lib/ThemeContext';
 import { THEMES } from '../../lib/themes';
 
@@ -25,6 +26,7 @@ export default function LoginScreen() {
       const res = await api.post('/auth/login', { email, password });
       await saveToken(res.data.token);
       await saveUser(res.data.user);
+      registerForPushNotifications().catch((e) => console.warn('[Push] Registrierung fehlgeschlagen:', e));
       router.replace('/(tabs)');
     } catch {
       setError('Login fehlgeschlagen. Bitte prüfe E-Mail und Passwort.');
@@ -61,6 +63,8 @@ export default function LoginScreen() {
             placeholder="Passwort"
             placeholderTextColor={theme.textDim}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
             onChangeText={setPassword}
             value={password}
           />

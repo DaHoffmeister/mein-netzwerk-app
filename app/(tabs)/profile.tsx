@@ -2,11 +2,22 @@
 // Profil-Screen mit Theme-Auswahl
 
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import { THEMES } from '../../lib/themes';
+import { deleteToken, deleteUser } from '../../lib/auth';
+import api from '../../lib/api';
 
 export default function ProfileScreen() {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await api.post('/auth/logout').catch(() => {});
+    await deleteToken();
+    await deleteUser();
+    router.replace('/(auth)/login');
+  }
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -56,6 +67,13 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+      <Text style={[styles.sectionTitle, { color: theme.textDim }]}>ACCOUNT</Text>
+      <View style={[styles.card, { backgroundColor: theme.panel }]}>
+        <TouchableOpacity style={[styles.themeRow, { borderBottomWidth: 0 }]} onPress={handleLogout}>
+          <Text style={[styles.themeLabel, { color: theme.danger }]}>Ausloggen</Text>
+        </TouchableOpacity>
+      </View>
+
     </ScrollView>
   );
 }
