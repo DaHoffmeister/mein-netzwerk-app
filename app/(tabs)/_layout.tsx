@@ -18,6 +18,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index"   options={{ title: 'Home' }} />
+      <Tabs.Screen name="chat"    options={{ title: 'Chats', headerShown: false }} />
       <Tabs.Screen name="feed"    options={{ title: 'Feed' }} />
       <Tabs.Screen name="events"  options={{ title: 'Events' }} />
       <Tabs.Screen name="groups"  options={{ title: 'Gruppen' }} />

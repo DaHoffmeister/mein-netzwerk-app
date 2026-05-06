@@ -37,6 +37,27 @@
 
 ---
 
+### Phase 6 — Chat / Messenger mit E2E ✅ Implementiert (2026-05-06)
+- ✅ `app/(tabs)/chat.tsx`: Konversationsliste (DMs + Gruppen, Ungelesen-Indikator, 🔒-Markierung)
+- ✅ `app/chat/[id].tsx`: Einzel-Chat mit Bubbles, WebSocket, REST-Fallback
+- ✅ `lib/crypto/e2e.ts`: ECDH P-256 + AES-GCM 256 + PBKDF2 (pure JS, @noble-Libraries)
+- ✅ `lib/crypto/keyStore.ts`: Key-Persistenz via expo-secure-store (Keychain/Keystore)
+- ✅ `lib/crypto/e2eContext.tsx`: React-Kontext für Key-Status
+- ✅ `app/e2e-setup.tsx`: Key-Einrichtung (Neu generieren oder von Web-Backup wiederherstellen)
+- ✅ Web/Mobile Backup-Kompatibilität (PKCS8/SPKI-Format, gleiche Algorithmen)
+- ✅ `E2E_DOKU.md` + `WORKFLOW.md` erstellt
+- 🔲 **Noch zu testen**: Erster Live-Test mit echtem Key-Austausch und Entschlüsselung
+- 🔲 **Noch offen**: Gruppe in App erstellen (Key-Verteilung), Backup-Status UI
+
+**Erkenntnisse:**
+- `crypto.subtle` (Web Crypto API) existiert nicht in Hermes/React Native → @noble-Libraries als Drop-in
+- `IndexedDB` → `expo-secure-store` (bereits im Projekt vorhanden, kein Extra-Paket)
+- Import-Pfade für @noble: `@noble/curves/nist.js`, `@noble/ciphers/aes.js`, etc.
+- PBKDF2 (600.000 Iterationen) blockiert JS-Thread ~3-4 Sek. — Ladeindikator nötig
+- Kein EAS Build nötig — pure JS
+
+---
+
 ## In Arbeit / Offen 🔲
 
 ### Phase 4 — Website-Features (nächste Phase)
@@ -49,13 +70,6 @@
 - 🔲 `/.well-known/assetlinks.json` auf dem Pi hinterlegen
 - 🔲 `intentFilters` in `app.json` für `net.assozrpg.de`
 - 🔲 Neuer EAS Build
-
-### Phase 6 — Chat / Messenger
-- 🔲 WebSocket-Verbindung (vorhandener `/ws` Endpoint)
-- 🔲 Chat-Screen: Konversationsliste
-- 🔲 Echtzeit-Nachrichten senden/empfangen
-- 🔲 Link-Preview, YouTube-Embed, Sticker
-- 🔲 Push bei neuer Nachricht (App im Hintergrund)
 
 ---
 
