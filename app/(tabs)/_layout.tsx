@@ -19,10 +19,10 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index"   options={{ title: 'Home' }} />
       <Tabs.Screen name="chat"    options={{ title: 'Chats', headerShown: false }} />
-      <Tabs.Screen name="feed"    options={{ title: 'Feed' }} />
-      <Tabs.Screen name="events"  options={{ title: 'Events' }} />
-      <Tabs.Screen name="groups"  options={{ title: 'Gruppen' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
+      <Tabs.Screen name="feed"    options={{ title: 'Feed', headerShown: false }} />
+      <Tabs.Screen name="events"  options={{ title: 'Events', headerShown: false }} />
+      <Tabs.Screen name="groups"  options={{ title: 'Gruppen', headerShown: false }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profil', headerShown: false }} />
     </Tabs>
   );
 }
