@@ -60,11 +60,41 @@
 
 ## In Arbeit / Offen 🔲
 
-### Phase 4 — Website-Features (nächste Phase)
-- 🔲 Feed-Screen: Posts anzeigen + erstellen (`/api/posts`)
-- 🔲 Gruppen-Screen: Liste + Detail (`/api/groups`)
-- 🔲 Profil-Screen: echte Userdaten, Avatar (`/api/users/me`)
-- 🔲 Events-Screen: Liste + RSVP (`/api/events`)
+### Phase 4a — Kern-Features (nächste Phase)
+
+#### Feed
+- 🔲 Posts laden & anzeigen (Infinite Scroll, Cursor-Pagination)
+- 🔲 Post erstellen (Text + optional Bild)
+- 🔲 Post bearbeiten & löschen (eigene Posts)
+- 🔲 Reaktionen (ME_LAIK, NOOOT, BUS, SLAP, TUSS_HOT_ODER_IRRE_ICH_MICH) — Toggle & Replace
+- 🔲 Kommentare anzeigen, schreiben, löschen
+
+#### Gruppen
+- 🔲 Gruppenliste anzeigen (Name, Beschreibung, Mitgliederzahl)
+- 🔲 Gruppe beitreten / verlassen
+- 🔲 Gruppe erstellen (Name, Beschreibung)
+- 🔲 Gruppen-Posts lesen & schreiben
+- 🔲 Gruppen-Reaktionen (👍 ❤️ 😂 🔥 😮)
+- 🔲 Gruppen-Kommentare
+
+#### Profil
+- 🔲 Eigenes Profil anzeigen (Avatar, Bio, Gruppen)
+- 🔲 Bio bearbeiten
+- 🔲 Avatar hochladen
+- 🔲 Passwort ändern
+- 🔲 Fremde Profile anzeigen (Avatar, Bio, Gruppen)
+
+#### Events
+- 🔲 Event-Liste anzeigen (Datum, Titel, Ort)
+- 🔲 Event-Detail (Beschreibung, RSVPs)
+- 🔲 RSVP (Zusagen / Absagen)
+- 🔲 Event erstellen
+
+### Phase 4b — Erweiterte Features (nach 4a)
+- 🔲 Gruppendetails: Ressourcen, Dateien, Videos
+- 🔲 Quests / Projekte in Gruppen
+- 🔲 Mentions-Center im Profil
+- 🔲 Admin-Funktionen (Invite Links, User-Verwaltung)
 
 ### Phase 5 — Android App Links
 - 🔲 `/.well-known/assetlinks.json` auf dem Pi hinterlegen
