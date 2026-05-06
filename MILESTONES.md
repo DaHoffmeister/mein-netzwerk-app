@@ -71,6 +71,14 @@
 - 🔲 `intentFilters` in `app.json` für `net.assozrpg.de`
 - 🔲 Neuer EAS Build
 
+### Phase 7 — Kamera-Streaming (Mobile)
+- 🔲 `react-native-webrtc` installieren (EAS Build nötig)
+- 🔲 Kamera- & Mikrofon-Permissions in `app.json`
+- 🔲 Neuer Stream-Screen: Kamera starten, Room erstellen/joinen
+- 🔲 Bestehenden Signaling-Server (WebSocket) der Web-App wiederverwenden
+- 🔲 Viewer-Modus: anderen Streams auf dem Handy zuschauen
+- ℹ️ Screen-Sharing auf iOS stark eingeschränkt — nur Kamera realistisch
+
 ---
 
 ## Technische Infos
