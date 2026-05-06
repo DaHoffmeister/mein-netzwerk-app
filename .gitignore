@@ -41,6 +41,5 @@ yarn-error.*
 /android
 
 # Secrets / Firebase
-google-services.json
 *.json.key
 assoz-net-*.json

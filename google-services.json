@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "641683548269",
+    "project_id": "assoz-net",
+    "storage_bucket": "assoz-net.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641683548269:android:a2a947a3ff2e404b11f764",
+        "android_client_info": {
+          "package_name": "com.kungill.assoznetapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoULeDsyCxGCi3U8jUGw7aQ8YdtVdg9to"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
