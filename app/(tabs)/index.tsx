@@ -23,6 +23,8 @@ const ITEMS = [
   { key: 'aubergine', emoji: '🍆', category: 'alcohol' },
   { key: 'brokkoli',  emoji: '🥦', category: 'drug' },
   { key: 'nase',      emoji: '👃', category: 'drug' },
+  { key: 'burger',    emoji: '🍔', category: 'drug' },
+  { key: 'suesses',   emoji: '🍬', category: 'drug' },
 ];
 
 const NOTIFY_TYPES = [
@@ -271,7 +273,6 @@ export default function HomeScreen() {
                   {ITEMS.filter(i => i.category === 'alcohol').map(item => (
                     <TouchableOpacity key={item.key} style={[styles.counterButton, { backgroundColor: theme.brand }]} onPress={() => openConsumeModal(item)}>
                       <Text style={styles.counterEmoji}>{item.emoji}</Text>
-                      <Text style={[styles.counterLabel, { color: theme.bg }]}>{item.key}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -282,7 +283,6 @@ export default function HomeScreen() {
                   {ITEMS.filter(i => i.category === 'drug').map(item => (
                     <TouchableOpacity key={item.key} style={[styles.counterButton, { backgroundColor: theme.accent }]} onPress={() => openConsumeModal(item)}>
                       <Text style={styles.counterEmoji}>{item.emoji}</Text>
-                      <Text style={[styles.counterLabel, { color: theme.text }]}>{item.key}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -358,7 +358,16 @@ export default function HomeScreen() {
               placeholder="Erster Bereich (z.B. Wohnzimmer) *"
               placeholderTextColor={theme.textDim} value={firstSessionName} onChangeText={setFirstSessionName} />
             {errorMsg ? <Text style={{ color: theme.danger, marginBottom: 8 }}>{errorMsg}</Text> : null}
-            <Text style={[styles.modalSubtitle, { color: theme.textDim }]}>Teilnehmer:</Text>
+            <View style={styles.participantHeader}>
+              <Text style={[styles.modalSubtitle, { color: theme.textDim, marginTop: 0, marginBottom: 0 }]}>Teilnehmer:</Text>
+              <TouchableOpacity onPress={() =>
+                setSelectedUserIds(selectedUserIds.length === allUsers.length ? [] : allUsers.map(u => u.id))
+              }>
+                <Text style={[styles.alleBtn, { color: theme.brand }]}>
+                  {selectedUserIds.length === allUsers.length ? 'Keine' : 'Alle'}
+                </Text>
+              </TouchableOpacity>
+            </View>
             <ScrollView style={{ maxHeight: 160 }}>
               {allUsers.map(u => (
                 <TouchableOpacity key={u.id} style={[styles.userRow, { borderBottomColor: theme.muted }]}
@@ -387,7 +396,16 @@ export default function HomeScreen() {
               placeholder="Name des Bereichs (z.B. Pool) *"
               placeholderTextColor={theme.textDim} value={newSessionName} onChangeText={setNewSessionName} />
             {errorMsg ? <Text style={{ color: theme.danger, marginBottom: 8 }}>{errorMsg}</Text> : null}
-            <Text style={[styles.modalSubtitle, { color: theme.textDim }]}>Teilnehmer:</Text>
+            <View style={styles.participantHeader}>
+              <Text style={[styles.modalSubtitle, { color: theme.textDim, marginTop: 0, marginBottom: 0 }]}>Teilnehmer:</Text>
+              <TouchableOpacity onPress={() =>
+                setNewSessionUserIds(newSessionUserIds.length === allUsers.length ? [] : allUsers.map(u => u.id))
+              }>
+                <Text style={[styles.alleBtn, { color: theme.brand }]}>
+                  {newSessionUserIds.length === allUsers.length ? 'Keine' : 'Alle'}
+                </Text>
+              </TouchableOpacity>
+            </View>
             <ScrollView style={{ maxHeight: 160 }}>
               {allUsers.map(u => (
                 <TouchableOpacity key={u.id} style={[styles.userRow, { borderBottomColor: theme.muted }]}
@@ -563,7 +581,7 @@ const styles = StyleSheet.create({
 
   buttonGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
   counterButton: { width: '22%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  counterEmoji: { fontSize: 24 },
+  counterEmoji: { fontSize: 28, textAlign: 'center', includeFontPadding: false } as any,
   counterLabel: { fontSize: 11, marginTop: 4 },
 
   notifyRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
@@ -590,6 +608,9 @@ const styles = StyleSheet.create({
   modalSubtitle: { fontSize: 14, marginTop: 16, marginBottom: 8 },
 
   input: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 16, marginBottom: 8 },
+
+  participantHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, marginBottom: 8 },
+  alleBtn: { fontWeight: '700', fontSize: 14, paddingHorizontal: 4 },
 
   userRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
   checkbox: { fontSize: 20, marginRight: 12 },

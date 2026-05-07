@@ -62,6 +62,7 @@ export type SessionStat = {
   avatarUrl: string | null;
   hopfen: number; trauben: number; pistole: number;
   aubergine: number; brokkoli: number; nase: number;
+  burger: number; suesses: number;
 };
 
 // ── Messenger ────────────────────────────────────────────────────────────────
