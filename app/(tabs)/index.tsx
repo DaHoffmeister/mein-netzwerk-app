@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
 
   buttonGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
   counterButton: { width: '22%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  counterEmoji: { fontSize: 28, textAlign: 'center', includeFontPadding: false } as any,
+  counterEmoji: { fontSize: 28, lineHeight: 28, textAlign: 'center', includeFontPadding: false, textAlignVertical: 'center' } as any,
   counterLabel: { fontSize: 11, marginTop: 4 },
 
   notifyRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
