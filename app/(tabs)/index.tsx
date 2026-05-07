@@ -28,9 +28,9 @@ const ITEMS = [
 ];
 
 const NOTIFY_TYPES = [
-  { key: 'essen',    emoji: '🍕', label: 'Essen da!' },
-  { key: 'brokkoli', emoji: '🥦', label: 'Brokkoli läuft!' },
-  { key: 'nase',     emoji: '👃', label: 'Nase fertig!' },
+  { key: 'essen',    emoji: '🍕', label: 'Nom nom!' },
+  { key: 'brokkoli', emoji: '🥦', label: 'Brokkoli liegt in der Luft' },
+  { key: 'nase',     emoji: '👃', label: 'Nase läuft' },
 ];
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────
