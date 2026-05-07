@@ -7,6 +7,7 @@ import {
   Modal, TextInput, Switch, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../../lib/api';
 import { getToken } from '../../lib/auth';
 import { useTheme } from '../../lib/ThemeContext';
@@ -37,13 +38,13 @@ const ITEMS = [
   { key: 'Wein',     emoji: '🍷', category: 'alcohol' },
   { key: 'Shot',     emoji: '🥃', category: 'alcohol' },
   { key: 'Cocktail', emoji: '🍹', category: 'alcohol' },
-  { key: 'Joint',    emoji: '🌿', category: 'drug' },
+  { key: 'Joint',    emoji: '🥦', category: 'drug' },
   { key: 'Line',     emoji: '❄️', category: 'drug' },
 ];
 
 const NOTIFY_TYPES = [
   { key: 'essen', emoji: '🍕', label: 'Essen da!' },
-  { key: 'joint', emoji: '🌿', label: 'Joint läuft!' },
+  { key: 'joint', emoji: '🥦', label: 'Joint läuft!' },
   { key: 'line',  emoji: '❄️', label: 'Lines fertig!' },
 ];
 
@@ -51,6 +52,7 @@ const NOTIFY_TYPES = [
 
 export default function HomeScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [session, setSession] = useState<Session | null>(null);
   const [stats, setStats] = useState<Participant[]>([]);
@@ -192,6 +194,10 @@ export default function HomeScreen() {
   }
 
   return (
+    <View style={{ flex: 1, backgroundColor: theme.bg }}>
+      <View style={[styles.header, { backgroundColor: theme.panel, borderBottomColor: theme.muted, paddingTop: insets.top + 8 }]}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Home</Text>
+      </View>
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.bg }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadSession(); }} tintColor={theme.brand} />}
@@ -236,8 +242,8 @@ export default function HomeScreen() {
             ))}
           </View>
 
-          {/* Sonstiges-Buttons */}
-          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>SONSTIGES</Text>
+          {/* Leckerlies-Buttons */}
+          <Text style={[styles.sectionTitle, { color: theme.textDim }]}>LECKERLIES</Text>
           <View style={styles.buttonGrid}>
             {ITEMS.filter(i => i.category === 'drug').map(item => (
               <TouchableOpacity
@@ -277,26 +283,36 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Stats-Tabelle */}
+          {/* Stats-Tabelle — nur Spalten mit mind. einem Eintrag */}
           <Text style={[styles.sectionTitle, { color: theme.textDim }]}>ÜBERSICHT</Text>
-          <ScrollView horizontal>
-            <View>
-              <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, styles.tableCellName, styles.tableHeader, { color: theme.textDim }]}>Name</Text>
-                {ITEMS.map(i => (
-                  <Text key={i.key} style={[styles.tableCell, styles.tableHeader, { color: theme.textDim }]}>{i.emoji}</Text>
-                ))}
-              </View>
-              {stats.map((p, idx) => (
-                <View key={p.userId} style={[styles.tableRow, idx % 2 === 0 && { backgroundColor: theme.panel }]}>
-                  <Text style={[styles.tableCell, styles.tableCellName, { color: theme.text }]}>{p.username}</Text>
-                  {ITEMS.map(i => (
-                    <Text key={i.key} style={[styles.tableCell, { color: theme.text }]}>{p[i.key as keyof Participant] as number}</Text>
+          {(() => {
+            const activeItems = ITEMS.filter(item =>
+              stats.some(p => (p[item.key as keyof Participant] as number) > 0)
+            );
+            if (activeItems.length === 0) return (
+              <Text style={[{ color: theme.textDim, marginLeft: 16, marginBottom: 12 }]}>Noch nichts konsumiert.</Text>
+            );
+            return (
+              <ScrollView horizontal>
+                <View>
+                  <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, styles.tableCellName, styles.tableHeader, { color: theme.textDim }]}>Name</Text>
+                    {activeItems.map(i => (
+                      <Text key={i.key} style={[styles.tableCell, styles.tableHeader, { color: theme.textDim }]}>{i.emoji}</Text>
+                    ))}
+                  </View>
+                  {stats.map((p, idx) => (
+                    <View key={p.userId} style={[styles.tableRow, idx % 2 === 0 && { backgroundColor: theme.panel }]}>
+                      <Text style={[styles.tableCell, styles.tableCellName, { color: theme.text }]}>{p.username}</Text>
+                      {activeItems.map(i => (
+                        <Text key={i.key} style={[styles.tableCell, { color: theme.text }]}>{p[i.key as keyof Participant] as number}</Text>
+                      ))}
+                    </View>
                   ))}
                 </View>
-              ))}
-            </View>
-          </ScrollView>
+              </ScrollView>
+            );
+          })()}
         </>
       )}
 
@@ -409,12 +425,16 @@ export default function HomeScreen() {
         </View>
       </Modal>
     </ScrollView>
+    </View>
   );
 }
 
 // ── Styles (nur Layout, keine Farben) ────────────────────────────
 
 const styles = StyleSheet.create({
+  header: { paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
+  headerTitle: { fontSize: 26, fontWeight: '700' },
+
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, marginTop: 100 },
   emptyText: { fontSize: 18, marginBottom: 24 },
 

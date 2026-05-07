@@ -6,6 +6,7 @@
 import 'react-native-get-random-values';
 
 import { useEffect, useRef } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useRootNavigationState, useSegments } from 'expo-router';
 import { getUser, deleteToken, deleteUser } from '../lib/auth';
 import { ThemeProvider } from '../lib/ThemeContext';
@@ -56,6 +57,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <E2EProvider>
+        <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: false }} />
       </E2EProvider>
     </ThemeProvider>
