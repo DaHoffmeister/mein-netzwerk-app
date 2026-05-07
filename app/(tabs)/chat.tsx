@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
+import NavLamp from '../../lib/NavLamp';
 import { messenger, usersApi } from '../../lib/api';
 import { getUser } from '../../lib/auth';
 
@@ -211,6 +212,7 @@ export default function ChatScreen() {
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, { backgroundColor: theme.panel, borderBottomColor: theme.muted }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Nachrichten</Text>
+        <NavLamp />
         <TouchableOpacity onPress={openPicker} hitSlop={12}>
           <Text style={[styles.newChatBtn, { color: theme.brand }]}>＋</Text>
         </TouchableOpacity>

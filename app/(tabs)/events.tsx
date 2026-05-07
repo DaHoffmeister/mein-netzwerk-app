@@ -10,6 +10,7 @@ import {
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../lib/ThemeContext';
+import NavLamp from '../../lib/NavLamp';
 import { eventsApi, type Event } from '../../lib/api';
 
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────────
@@ -261,6 +262,7 @@ export default function EventsScreen() {
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, { backgroundColor: theme.panel, borderBottomColor: theme.muted, paddingTop: insets.top + 8 }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Events</Text>
+        <NavLamp />
         <TouchableOpacity onPress={() => setNewVisible(true)} hitSlop={12}>
           <Text style={[styles.newBtn, { color: theme.brand }]}>＋</Text>
         </TouchableOpacity>

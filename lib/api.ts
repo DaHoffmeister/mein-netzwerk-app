@@ -17,6 +17,53 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// ── Abend ─────────────────────────────────────────────────────────────────────
+
+export type AbendSession = {
+  id: number;
+  name: string;
+  code: string;
+  active: boolean;
+  participants: { user: { id: number; username: string; avatarUrl: string | null } }[];
+};
+
+export type Abend = {
+  id: number;
+  date: string;
+  name: string | null;
+  active: boolean;
+  createdById: number;
+  sessions: AbendSession[];
+};
+
+export const abendApi = {
+  create: (sessionName: string, participantIds: number[], name?: string) =>
+    api.post('/counter/abend', { sessionName, participantIds, name }).then(r => r.data) as Promise<Abend>,
+
+  active: () =>
+    api.get('/counter/abend/active').then(r => r.data) as Promise<Abend | null>,
+
+  addSession: (abendId: number, name: string, participantIds: number[]) =>
+    api.post(`/counter/abend/${abendId}/sessions`, { name, participantIds }).then(r => r.data) as Promise<AbendSession>,
+
+  end: (abendId: number) =>
+    api.post(`/counter/abend/${abendId}/end`).then(r => r.data),
+
+  stats: (abendId: number) =>
+    api.get(`/counter/abend/${abendId}/stats`).then(r => r.data) as Promise<{
+      totals: SessionStat[];
+      perSession: { sessionId: number; sessionName: string; stats: SessionStat[] }[];
+    }>,
+};
+
+export type SessionStat = {
+  userId: number;
+  username: string;
+  avatarUrl: string | null;
+  Bier: number; Wein: number; Shot: number;
+  Cocktail: number; Joint: number; Line: number;
+};
+
 // ── Messenger ────────────────────────────────────────────────────────────────
 
 export const messenger = {

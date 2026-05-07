@@ -10,6 +10,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../lib/ThemeContext';
+import NavLamp from '../../lib/NavLamp';
 import { groupsApi, type Group } from '../../lib/api';
 
 const BASE_URL = 'https://net.assozrpg.de';
@@ -205,6 +206,7 @@ export default function GroupsScreen() {
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, { backgroundColor: theme.panel, borderBottomColor: theme.muted, paddingTop: insets.top + 8 }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Gruppen</Text>
+        <NavLamp />
         <TouchableOpacity onPress={() => setNewGroupVisible(true)} hitSlop={12}>
           <Text style={[styles.newBtn, { color: theme.brand }]}>＋</Text>
         </TouchableOpacity>

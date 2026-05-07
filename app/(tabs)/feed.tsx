@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import NavLamp from '../../lib/NavLamp';
 import { useTheme } from '../../lib/ThemeContext';
 import { getUser } from '../../lib/auth';
 import {
@@ -364,6 +365,7 @@ export default function FeedScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.panel, borderBottomColor: theme.muted, paddingTop: insets.top + 8 }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Feed</Text>
+        <NavLamp />
         <TouchableOpacity onPress={() => setNewPostVisible(true)} hitSlop={12}>
           <Text style={[styles.newPostBtn, { color: theme.brand }]}>＋</Text>
         </TouchableOpacity>
