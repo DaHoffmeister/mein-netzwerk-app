@@ -1,6 +1,6 @@
 # Milestones — mein-netzwerk-app
 
-> Automatisch gepflegt vom Dokumentations-Agenten. Letzte Aktualisierung: 2026-04-03
+> Letzte Aktualisierung: 2026-05-07
 
 ---
 
@@ -27,6 +27,25 @@
 - ✅ Theme-System: 7 Themes, Persistenz via SecureStore
 - ✅ Logout-Funktion im Profil-Screen
 - ✅ EAS Development Build (APK) — läuft auf Android ohne Expo Go
+
+### Phase 2b — Abend-System & Redesign (2026-05-07)
+- ✅ **Abend-System**: Ein Abend enthält mehrere gleichzeitig laufende, frei benannte Bereiche (Sessions)
+- ✅ Tab-Icons: AntDesign, Entypo, Feather, FontAwesome, FontAwesome5 für alle 6 Tabs
+- ✅ NavLamp-Animation: leuchtender Sweep-Effekt im Home-Header (pure View-Slices, kein native Modul)
+- ✅ Header-Konsistenz: Home-Tab nutzt `headerStyle` statt `headerBackgroundContainerStyle`
+- ✅ "Für alle"-Button im Konsum-Modal (übergibt IDs direkt, umgeht setState-Timing-Bug)
+- ✅ "Alle/Keine"-Toggle bei Teilnehmerauswahl (Abend erstellen + Bereich hinzufügen)
+- ✅ Abendzusammenfassung-Modal: Gesamt-Stats + aufklappbare Bereich-Tabellen
+- ✅ **Datenschutz-Umbenennung**: Items heißen jetzt neutrale Emoji-Namen
+  - Bier → `hopfen` 🌿, Wein → `trauben` 🍇, Shot → `pistole` 🔫
+  - Cocktail → `aubergine` 🍆, Joint → `brokkoli` 🥦, Line → `nase` 👃
+- ✅ Benachrichtigungs-Typen angepasst: `joint` → `brokkoli`, `line` → `nase`
+- ✅ `AbendSummaryCard` in `app/group/[id].tsx`: Balkendiagramm aus Gruppen-Post-Metadata
+
+**Erkenntnisse:**
+- `expo-linear-gradient` → "NativeViewManagerAdapter not exported" im Dev Build → durch View-Slices mit Opacity ersetzt
+- `setState` ist async: sofort danach gelesener State hat alten Wert → `overrideUserIds`-Parameter als Workaround
+- Abend-Schema ist backward-compatible: `abendId` in JoinSession nullable
 
 ### Phase 3 — Push-Benachrichtigungen
 - ✅ `expo-notifications` installiert
@@ -125,3 +144,7 @@
 
 **Phase 4 starten** — Feed-Screen mit echten Posts aus `/api/posts`  
 Kein neuer EAS-Build nötig: bestehender Dev Build + `npx expo start`
+
+**Offen im Abend-System:**
+- Gruppen-Posts in der App zeigen `AbendSummaryCard` (fertig) — Live-Test mit echtem Abend ausstehend
+- Lokales LLM (Ollama + llama3.1:8b) als Bot-Backend evaluieren — Pi 5 mit 8GB RAM geeignet

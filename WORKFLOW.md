@@ -33,15 +33,14 @@ npx expo start --web
 
 ```bash
 # SSH verbinden
-ssh -i ~/.ssh/id_rsa pi@192.168.178.32
+ssh -i ~/.ssh/id_pi_assoz kungill@192.168.178.32
 
-# Code aktualisieren und Container neu starten
-cd ~/mein-netzwerk
-git pull
-docker compose restart backend
+# Deploy (pull + build + restart)
+bash /mnt/nvme/assoz_net/mein-netzwerk/deploy.sh
 ```
 
-Der Backend-Container läuft unter `net.assozrpg.de` (nginx Reverse Proxy).
+Der Backend-Container läuft unter `net.assozrpg.de` (nginx Reverse Proxy).  
+Projektpfad auf dem Pi: `/mnt/nvme/assoz_net/mein-netzwerk/`
 
 ---
 
@@ -96,6 +95,24 @@ WebSocket.send({ type: "messenger-message", conversationId, ...payload })
          ↓
 REST Fallback wenn WS nicht offen: POST /messenger/conversations/:id/messages
 ```
+
+---
+
+## Konsum-Items (Abend-System)
+
+Die Items im Home-Screen sind bewusst neutral benannt (Datenschutz — keine Substanznamen in DB/API):
+
+| Emoji | Key | Kategorie |
+|-------|-----|-----------|
+| 🌿 | `hopfen` | alcohol |
+| 🍇 | `trauben` | alcohol |
+| 🔫 | `pistole` | alcohol |
+| 🍆 | `aubergine` | alcohol |
+| 🥦 | `brokkoli` | drug |
+| 👃 | `nase` | drug |
+
+Nur in der Leckerlies-Gruppe (`AbendSummaryCard`) werden Diagramme aus den Rohdaten gerendert.  
+Benachrichtigungs-Typen: `essen`, `brokkoli`, `nase`
 
 ---
 
