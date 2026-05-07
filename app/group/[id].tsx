@@ -12,7 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import { getUser } from '../../lib/auth';
-import { groupsApi, type GroupPost, type Comment, type GroupRoom } from '../../lib/api';
+import { groupsApi, type GroupPost, type Comment, type GroupRoom, type AbendSummaryMeta, type SessionStat } from '../../lib/api';
+import { useWindowDimensions } from 'react-native';
 
 const BASE_URL = 'https://net.assozrpg.de';
 
@@ -121,6 +122,97 @@ function GroupCommentSection({ groupId, postId, myUserId }: { groupId: number; p
   );
 }
 
+// ── Abend-Zusammenfassung ─────────────────────────────────────────────────────
+
+const ITEMS_ALL = ['Bier', 'Wein', 'Shot', 'Cocktail', 'Joint', 'Line'];
+const ITEM_EMOJI: Record<string, string> = { Bier:'🍺', Wein:'🍷', Shot:'🥃', Cocktail:'🍹', Joint:'🥦', Line:'❄️' };
+
+function AbendSummaryCard({ meta }: { meta: AbendSummaryMeta }) {
+  const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const activeItems = ITEMS_ALL.filter(k => meta.totals.some(p => (p[k as keyof SessionStat] as number) > 0));
+  const maxVal = Math.max(1, ...meta.totals.flatMap(p => activeItems.map(k => p[k as keyof SessionStat] as number)));
+  const barAreaWidth = width - 80;
+  const barWidth = Math.max(20, Math.floor((barAreaWidth / Math.max(activeItems.length, 1) / Math.max(meta.totals.length, 1)) - 4));
+
+  const dateStr = new Date(meta.date).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  return (
+    <View style={[summaryStyles.container, { backgroundColor: theme.bg, borderColor: theme.brand }]}>
+      <Text style={[summaryStyles.title, { color: theme.brand }]}>🎉 {meta.abendName || dateStr}</Text>
+      <Text style={[summaryStyles.subtitle, { color: theme.textDim }]}>{dateStr}</Text>
+
+      {/* Balkendiagramm */}
+      <View style={summaryStyles.chart}>
+        {meta.totals.map((person, pi) => (
+          <View key={person.userId} style={summaryStyles.personGroup}>
+            <Text style={[summaryStyles.personLabel, { color: theme.textDim }]} numberOfLines={1}>{person.username}</Text>
+            <View style={summaryStyles.bars}>
+              {activeItems.map(k => {
+                const val = person[k as keyof SessionStat] as number;
+                const barH = val > 0 ? Math.max(4, Math.round((val / maxVal) * 60)) : 2;
+                return (
+                  <View key={k} style={summaryStyles.barCol}>
+                    <Text style={summaryStyles.barVal}>{val > 0 ? val : ''}</Text>
+                    <View style={[summaryStyles.bar, { height: barH, backgroundColor: val > 0 ? theme.brand : theme.muted, width: barWidth }]} />
+                    <Text style={summaryStyles.barLabel}>{ITEM_EMOJI[k]}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Pro Bereich aufklappbar */}
+      {meta.perSession.map(ps => (
+        <View key={ps.sessionName}>
+          <TouchableOpacity style={[summaryStyles.sessionRow, { borderTopColor: theme.muted }]} onPress={() => setExpanded(expanded === ps.sessionName ? null : ps.sessionName)}>
+            <Text style={[summaryStyles.sessionName, { color: theme.textDim }]}>{ps.sessionName}</Text>
+            <Text style={{ color: theme.textDim }}>{expanded === ps.sessionName ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {expanded === ps.sessionName && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View>
+                <View style={{ flexDirection: 'row', paddingVertical: 4 }}>
+                  <Text style={[summaryStyles.tableCell, summaryStyles.tableName, { color: theme.textDim, fontWeight: 'bold' }]}>Name</Text>
+                  {activeItems.map(k => <Text key={k} style={[summaryStyles.tableCell, { color: theme.textDim, fontWeight: 'bold' }]}>{ITEM_EMOJI[k]}</Text>)}
+                </View>
+                {ps.stats.map((p, idx) => (
+                  <View key={p.userId} style={[{ flexDirection: 'row', paddingVertical: 4 }, idx % 2 === 0 && { backgroundColor: theme.panel }]}>
+                    <Text style={[summaryStyles.tableCell, summaryStyles.tableName, { color: theme.text }]}>{p.username}</Text>
+                    {activeItems.map(k => <Text key={k} style={[summaryStyles.tableCell, { color: theme.text }]}>{p[k as keyof SessionStat] as number}</Text>)}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const summaryStyles = StyleSheet.create({
+  container:    { borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 8 },
+  title:        { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  subtitle:     { fontSize: 12, marginBottom: 12 },
+  chart:        { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
+  personGroup:  { alignItems: 'center' },
+  personLabel:  { fontSize: 11, marginBottom: 4, maxWidth: 60 },
+  bars:         { flexDirection: 'row', alignItems: 'flex-end', gap: 2 },
+  barCol:       { alignItems: 'center', justifyContent: 'flex-end' },
+  barVal:       { fontSize: 9, marginBottom: 1 },
+  bar:          { borderRadius: 2 },
+  barLabel:     { fontSize: 11, marginTop: 2 },
+  sessionRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, marginTop: 4 },
+  sessionName:  { fontSize: 12, fontWeight: '600', letterSpacing: 0.5 },
+  tableCell:    { width: 44, textAlign: 'center', fontSize: 13 },
+  tableName:    { width: 80, textAlign: 'left' },
+});
+
 // ── Post-Karte ────────────────────────────────────────────────────────────────
 
 function GroupPostCard({ post, groupId, myUserId, onDelete }: {
@@ -165,6 +257,10 @@ function GroupPostCard({ post, groupId, myUserId, onDelete }: {
 
       {!!post.content && (
         <Text style={[styles.cardContent, { color: theme.text }]}>{post.content}</Text>
+      )}
+
+      {post.metadata?.type === 'abend_summary' && (
+        <AbendSummaryCard meta={post.metadata} />
       )}
 
       {imgUrl && (

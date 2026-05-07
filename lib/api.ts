@@ -160,10 +160,19 @@ export type Group = {
   createdBy: { id: number; username: string };
 };
 
+export type AbendSummaryMeta = {
+  type: 'abend_summary';
+  abendName: string | null;
+  date: string;
+  totals: SessionStat[];
+  perSession: { sessionName: string; stats: SessionStat[] }[];
+};
+
 export type GroupPost = {
   id: number;
   content: string;
   imageUrl: string | null;
+  metadata: AbendSummaryMeta | null;
   createdAt: string;
   user: { id: number; username: string; avatarUrl: string | null };
 };
