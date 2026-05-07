@@ -17,18 +17,18 @@ import { getToken } from '../../lib/auth';
 // ── Konstanten ───────────────────────────────────────────────────
 
 const ITEMS = [
-  { key: 'Bier',     emoji: '🍺', category: 'alcohol' },
-  { key: 'Wein',     emoji: '🍷', category: 'alcohol' },
-  { key: 'Shot',     emoji: '🥃', category: 'alcohol' },
-  { key: 'Cocktail', emoji: '🍹', category: 'alcohol' },
-  { key: 'Joint',    emoji: '🥦', category: 'drug' },
-  { key: 'Line',     emoji: '❄️',  category: 'drug' },
+  { key: 'hopfen',    emoji: '🌿', category: 'alcohol' },
+  { key: 'trauben',   emoji: '🍇', category: 'alcohol' },
+  { key: 'pistole',   emoji: '🔫', category: 'alcohol' },
+  { key: 'aubergine', emoji: '🍆', category: 'alcohol' },
+  { key: 'brokkoli',  emoji: '🥦', category: 'drug' },
+  { key: 'nase',      emoji: '👃', category: 'drug' },
 ];
 
 const NOTIFY_TYPES = [
-  { key: 'essen', emoji: '🍕', label: 'Essen da!' },
-  { key: 'joint', emoji: '🥦', label: 'Joint läuft!' },
-  { key: 'line',  emoji: '❄️',  label: 'Lines fertig!' },
+  { key: 'essen',    emoji: '🍕', label: 'Essen da!' },
+  { key: 'brokkoli', emoji: '🥦', label: 'Brokkoli läuft!' },
+  { key: 'nase',     emoji: '👃', label: 'Nase fertig!' },
 ];
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────

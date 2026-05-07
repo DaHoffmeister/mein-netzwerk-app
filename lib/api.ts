@@ -60,8 +60,8 @@ export type SessionStat = {
   userId: number;
   username: string;
   avatarUrl: string | null;
-  Bier: number; Wein: number; Shot: number;
-  Cocktail: number; Joint: number; Line: number;
+  hopfen: number; trauben: number; pistole: number;
+  aubergine: number; brokkoli: number; nase: number;
 };
 
 // ── Messenger ────────────────────────────────────────────────────────────────

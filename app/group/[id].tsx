@@ -124,8 +124,8 @@ function GroupCommentSection({ groupId, postId, myUserId }: { groupId: number; p
 
 // ── Abend-Zusammenfassung ─────────────────────────────────────────────────────
 
-const ITEMS_ALL = ['Bier', 'Wein', 'Shot', 'Cocktail', 'Joint', 'Line'];
-const ITEM_EMOJI: Record<string, string> = { Bier:'🍺', Wein:'🍷', Shot:'🥃', Cocktail:'🍹', Joint:'🥦', Line:'❄️' };
+const ITEMS_ALL = ['hopfen', 'trauben', 'pistole', 'aubergine', 'brokkoli', 'nase'];
+const ITEM_EMOJI: Record<string, string> = { hopfen:'🌿', trauben:'🍇', pistole:'🔫', aubergine:'🍆', brokkoli:'🥦', nase:'👃' };
 
 function AbendSummaryCard({ meta }: { meta: AbendSummaryMeta }) {
   const { theme } = useTheme();
