@@ -272,7 +272,9 @@ export default function HomeScreen() {
                 <View style={styles.buttonGrid}>
                   {ITEMS.filter(i => i.category === 'alcohol').map(item => (
                     <TouchableOpacity key={item.key} style={[styles.counterButton, { backgroundColor: theme.brand }]} onPress={() => openConsumeModal(item)}>
-                      <Text style={styles.counterEmoji}>{item.emoji}</Text>
+                      <View style={styles.counterInner}>
+                        <Text style={styles.counterEmoji}>{item.emoji}</Text>
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -282,7 +284,9 @@ export default function HomeScreen() {
                 <View style={styles.buttonGrid}>
                   {ITEMS.filter(i => i.category === 'drug').map(item => (
                     <TouchableOpacity key={item.key} style={[styles.counterButton, { backgroundColor: theme.accent }]} onPress={() => openConsumeModal(item)}>
-                      <Text style={styles.counterEmoji}>{item.emoji}</Text>
+                      <View style={styles.counterInner}>
+                        <Text style={styles.counterEmoji}>{item.emoji}</Text>
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -580,8 +584,9 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 12, fontWeight: 'bold', marginLeft: 16, marginTop: 16, marginBottom: 8, letterSpacing: 1 },
 
   buttonGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
-  counterButton: { width: '22%', aspectRatio: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  counterEmoji: { fontSize: 28, lineHeight: 28, textAlign: 'center', includeFontPadding: false, textAlignVertical: 'center' } as any,
+  counterButton: { width: '22%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden' },
+  counterInner: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  counterEmoji: { fontSize: 26 },
   counterLabel: { fontSize: 11, marginTop: 4 },
 
   notifyRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
